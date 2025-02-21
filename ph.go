@@ -263,3 +263,66 @@ func (ph *ProductHunt) GetTopProductsByDate(date string) ([]Product, error) {
 	}
 	return products, nil
 }
+
+// GetProductsByDate retrieves top products for a specific date
+func (ph *ProductHunt) GetProductsByRankByDate(date string) ([]Product, error) {
+	postedAfter := fmt.Sprintf("%sT00:00:00Z", date)
+	postedBefore := fmt.Sprintf("%sT23:59:59Z", date)
+
+	query := fmt.Sprintf(`
+	query {
+	  posts(order: RANKING, postedAfter: "%s", postedBefore: "%s", first: 10) {
+	    edges {
+	      node {
+	        id
+	        name
+	        tagline
+	        description
+	        website
+	      }
+	    }
+	  }
+	}`, postedAfter, postedBefore)
+
+	data, err := fetchData(query, ph.APIKey)
+	if err != nil {
+		return nil, err
+	}
+
+	var products []Product
+	dataMap, ok := data["data"].(map[string]interface{})
+	if !ok {
+		return products, fmt.Errorf("invalid response format: missing 'data'")
+	}
+
+	posts, ok := dataMap["posts"].(map[string]interface{})
+	if !ok {
+		return products, fmt.Errorf("invalid response format: missing 'posts'")
+	}
+
+	edges, ok := posts["edges"].([]interface{})
+	if !ok {
+		return products, fmt.Errorf("invalid response format: missing 'edges'")
+	}
+
+	for _, edge := range edges {
+		edgeMap, ok := edge.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		node, ok := edgeMap["node"].(map[string]interface{})
+		if !ok {
+			continue
+		}
+		product := Product{
+			ID:          fmt.Sprintf("%v", node["id"]),
+			Name:        fmt.Sprintf("%v", node["name"]),
+			Tagline:     fmt.Sprintf("%v", node["tagline"]),
+			Description: fmt.Sprintf("%v", node["description"]),
+			Website:     fmt.Sprintf("%v", node["website"]),
+		}
+		products = append(products, product)
+	}
+
+	return products, nil
+}
