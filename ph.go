@@ -279,6 +279,7 @@ func (ph *ProductHunt) GetProductsByRankByDate(date string) ([]Product, error) {
 	        tagline
 	        description
 	        website
+			url
 	      }
 	    }
 	  }
@@ -320,6 +321,7 @@ func (ph *ProductHunt) GetProductsByRankByDate(date string) ([]Product, error) {
 			Tagline:     fmt.Sprintf("%v", node["tagline"]),
 			Description: fmt.Sprintf("%v", node["description"]),
 			Website:     fmt.Sprintf("%v", node["website"]),
+			URL:         fmt.Sprintf("%v", node["url"]),
 		}
 		products = append(products, product)
 	}
