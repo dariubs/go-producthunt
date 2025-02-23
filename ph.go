@@ -264,14 +264,13 @@ func (ph *ProductHunt) GetTopProductsByDate(date string) ([]Product, error) {
 	return products, nil
 }
 
-// GetProductsByDate retrieves top products for a specific date
-func (ph *ProductHunt) GetProductsByRankByDate(date string) ([]Product, error) {
+func (ph *ProductHunt) GetProductsByRankByDate(date string, limit int) ([]Product, error) {
 	postedAfter := fmt.Sprintf("%sT00:00:00Z", date)
 	postedBefore := fmt.Sprintf("%sT23:59:59Z", date)
 
 	query := fmt.Sprintf(`
 	query {
-	  posts(order: RANKING, postedAfter: "%s", postedBefore: "%s", first: 10) {
+	  posts(order: RANKING, postedAfter: "%s", postedBefore: "%s", first: %d) {
 	    edges {
 	      node {
 	        id
@@ -283,7 +282,7 @@ func (ph *ProductHunt) GetProductsByRankByDate(date string) ([]Product, error) {
 	      }
 	    }
 	  }
-	}`, postedAfter, postedBefore)
+	}`, postedAfter, postedBefore, limit)
 
 	data, err := fetchData(query, ph.APIKey)
 	if err != nil {
